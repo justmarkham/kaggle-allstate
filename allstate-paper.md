@@ -34,24 +34,20 @@ Here are some of my key findings from the exploratory process, and what I conclu
 	* Because more than 80% of the possible combinations did actually appear in the data, and because the number of plan combinations is so large, I concluded that it was better to predict the 7 individual options for each customer and combine them, rather than try to predict the entire plan (all 7 options at once) using a single model.
 
 3. **Number of shopping points:**
-	* As seen in the plot below, the training set contained a roughly normal distribution of "shopping points" (the number of quotes a customer reviewed), whereas the test set contained a a very different distribution.
-	* ![Comparing Number of Shopping Points in Training vs Test Sets](allstate-viz-1.png)
+	* As seen in the plot below, the training set contained a roughly normal distribution of "shopping points" (the number of quotes a customer reviewed), whereas the test set contained a a very different distribution.<br />![Comparing Number of Shopping Points in Training vs Test Sets](allstate-viz-1.png)
 	* I concluded that the number of shopping points was probably deliberately truncated in the test set in order to limit the information available to competitors and make the problem more challenging. I also concluded that it might be useful to similarly truncate the training set (for cross-validation) to provide more accurate estimates of test error during the modeling process.
 
 4. **Predictive power of final quote before purchase:**
-	* As seen in the plot below, the final quote a customer requests before the "purchase point" is hugely predictive (in the training set) of which options they will actually purchase. The final quote correctly predicted the purchased options 50% to 75% of the time, with that percentage steadily increasing as customers review more quotes.
-	* ![Effect of Number of Shopping Points on Predictive Power of Last Quote](allstate-viz-2.png)
+	* As seen in the plot below, the final quote a customer requests before the "purchase point" is hugely predictive (in the training set) of which options they will actually purchase. The final quote correctly predicted the purchased options 50% to 75% of the time, with that percentage steadily increasing as customers review more quotes.<br />![Effect of Number of Shopping Points on Predictive Power of Last Quote](allstate-viz-2.png)
 	* I concluded that using the final quote in the test set as a predictor of the purchase would be an excellent baseline strategy, and indeed this method was used as the "benchmark" on the Kaggle leaderboard (producing a score of 0.53793 on the public leaderboard).
 	* I also concluded that this is precisely why the number of shopping points was truncated in the test set; otherwise, the baseline strategy would likely have worked about 75% of the time on the test set.
 
 5. **Effect of purchase hour on the predictive power of the final quote:**
-	* I hypothesized that the time of day might affect the likelihood that a given customer would change their options between the final quote and the purchase point. As seen in the plot below, customers making a purchase between 9am and 4pm tended to change from their final quote about 30% of the time, whereas customers purchasing in the evening (or especially overnight) tended to change their options 35% of the time (or more).
-	* ![Effect of Purchase Hour on Likelihood of Changing from Last Quote](allstate-viz-3.png)
+	* I hypothesized that the time of day might affect the likelihood that a given customer would change their options between the final quote and the purchase point. As seen in the plot below, customers making a purchase between 9am and 4pm tended to change from their final quote about 30% of the time, whereas customers purchasing in the evening (or especially overnight) tended to change their options 35% of the time (or more).<br />![Effect of Purchase Hour on Likelihood of Changing from Last Quote](allstate-viz-3.png)
 	* I concluded that the time of day would be a useful feature to include in my models. I also concluded that binning the time into a few distinct categories might create an even more useful feature, since the variability during the overnight hours (as seen in the plot) would cause the model to overfit the training data for those individual hours, and thus an "overnight" category (averaging those values) would be more stable.
 
 6. **Dependencies between options:**
-	* I created dozens of plots to explore the relationships between the 7 different options (for the purchase point only). One example is below, in which I'm plotting the 3 options for D faceted against the 4 options for C. As you can see, there are clear patterns in the data. D=1 is only likely if C=1; D=3 is very likely if C=3, and is basically guaranteed if C=4.
-	* ![Customer selection of Option D based on their selection for Option C](allstate-viz-4.png)
+	* I created dozens of plots to explore the relationships between the 7 different options (for the purchase point only). One example is below, in which I'm plotting the 3 options for D faceted against the 4 options for C. As you can see, there are clear patterns in the data. D=1 is only likely if C=1; D=3 is very likely if C=3, and is basically guaranteed if C=4.<br />![Customer selection of Option D based on their selection for Option C](allstate-viz-4.png)
 	* I concluded that I might be able to compile a set of rules such as this across all of the options, and use it to "fix" any predicted combinations in the test set which seemed unlikely.
 
 
