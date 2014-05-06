@@ -1,6 +1,6 @@
 ## Problem Statement
 
-For my project, I entered the "[Allstate Purchase Prediction Challenge](http://www.kaggle.com/c/allstate-purchase-prediction-challenge)" on Kaggle. In this competition, the goal is to predict the exact car insurance options purchased by individual customers. The data available for training a model is the history of car insurance quotes that each customer reviewed before making a purchase, the options they actually purchased (the "purchase point"), and data about the customer and their car. The data available for testing was identical to the training set, except it was a different set of customers and the purchase point was excluded since it was the value to be predicted.
+For my project, I entered the "[Allstate Purchase Prediction Challenge](http://www.kaggle.com/c/allstate-purchase-prediction-challenge)" on Kaggle. In this competition, the goal is to predict the exact car insurance options purchased by individual customers. The data available for training a model is the history of car insurance quotes that each customer reviewed before making a purchase, the options they actually purchased (the "purchase point"), and data about the customer and their car. The data available for testing was identical to the training set, except it was a different set of customers, the purchase point was excluded (since it was the value to be predicted), and an unknown number of quotes were also excluded.
 
 For a prediction on a given customer to be counted as correct, one must successfully predict the value for all seven options, and each option has 2 to 4 possible values. Therefore, one could treat this as a classificiation problem with over 2,000 possible classes.
 
@@ -9,7 +9,7 @@ For a prediction on a given customer to be counted as correct, one must successf
 
 At the start of the competition, I came up with two hypotheses:
 
-1. I hypothesized that smart feature engineering and feature selection would be more important than the usage of advanced machine learning techniques. This hypothesis was partially based on readings from the course, and partially based on necessity (my toolbox of machine learning techniques is somewhat limited!)
+1. I hypothesized that smart feature engineering and feature selection would be more important than the usage of advanced machine learning techniques. This hypothesis was partially based on [readings](http://homes.cs.washington.edu/~pedrod/papers/cacm12.pdf) from the course, and partially based on necessity (my toolbox of machine learning techniques is somewhat limited!)
 
 2. I hypothesized that there would be patterns in the data that I could use to my advantage, which would not necessarily even require machine learning. Here are some examples of patterns that I hypothesized:
 	* Customers buying the last set of options they were quoted
@@ -35,7 +35,7 @@ Here are some of my key findings from the exploratory process, and what I conclu
 
 3. **Number of shopping points:**
 	* As seen in the plot below, the training set contained a roughly normal distribution of "shopping points" (the number of quotes a customer reviewed), whereas the test set contained a a very different distribution.<br />![Comparing Number of Shopping Points in Training vs Test Sets](allstate-viz-1.png)
-	* I concluded that the number of shopping points was probably deliberately truncated in the test set in order to limit the information available to competitors and make the problem more challenging. I also concluded that it might be useful to similarly truncate the training set (for cross-validation) to provide more accurate estimates of test error during the modeling process.
+	* I concluded that the number of shopping points was probably deliberately truncated in the test set in order to limit the information available to competitors and make the problem more challenging. (Kaggle later [confirmed](http://www.kaggle.com/c/allstate-purchase-prediction-challenge/forums/t/7240/is-the-test-data-truncation-a-trim-or-thinning-out) that the test set was truncated, but [declined](http://www.kaggle.com/c/allstate-purchase-prediction-challenge/forums/t/7119/recreating-a-truncated-test) to provide details on the truncation algorithm.) I also concluded that it might be useful to similarly truncate the training set (for cross-validation) to provide more accurate estimates of test error during the modeling process.
 
 4. **Predictive power of final quote before purchase:**
 	* As seen in the plot below, the final quote a customer requests before the "purchase point" is hugely predictive (in the training set) of which options they will actually purchase. The final quote correctly predicted the purchased options 50% to 75% of the time, with that percentage steadily increasing as customers review more quotes.<br />![Effect of Number of Shopping Points on Predictive Power of Last Quote](allstate-viz-2.png)
@@ -53,16 +53,29 @@ Here are some of my key findings from the exploratory process, and what I conclu
 
 ## Feature Transformation and Engineering
 
-The dataset provided by Kaggle included 25 features. I used some of those features as-is, and I engineered additional features using transformations or combinations of features. The competition rules did not allow the use of supplementary datasets, and so no other data was used.
+The [dataset provided by Kaggle](http://www.kaggle.com/c/allstate-purchase-prediction-challenge/data) included 25 features. I used some of those features as-is, and I engineered additional features using transformations or combinations of features. The competition rules did not allow the use of supplementary datasets, and so no other data was used.
 
-1. **Features used as-is**
-	* I used the following features as-is, and treated them as continuous variables: group_size, risk_factor, age_oldest, age_youngest, duration_previous, cost
-	* I used the following features as-is, and treated them as categorical variables: state, homeowner, car_value, married_couple, C_previous, A, B, C, D, E, F, G
+1. **Features used as-is:** I used the following features as-is, and either treated them as continuous variables or categorical variables. For the final model, the A through G options were treated as the response variables with all other variables used as predictors, though I also built an intermediate model (described further in the "Model Building" section) in which A through G were used as predictors instead.
+	* Continuous variables:
+		* group_size: number of people covered by the policy
+		* car_age: age of customer's car
+		* risk_factor: 1 through 4 assessment of customer risk
+		* age_oldest: age of oldest person covered by the policy
+		* age_youngest: age of youngest person covered by the policy
+		* duration_previous: years covered by previous issuer
+		* cost: cost of quoted options
+	* Categorical variables:
+		* state: customer location
+		* homeowner: yes or no
+		* car_value: value of customer's car when new, expressed only as letters 'a' through 'i'
+		* married_couple: yes or no
+		* C_previous: what customer previous had for option C
+		* A/B/C/D/E/F/G: coverage options
 
 2. **"Simplified" features:** I created "simpler" versions of certain features, under the theory that simpler features might be less noisy and could possibly prevent my models from overfitting the training set.
-	* Instead of using "time" as a feature, I created an "hour" categorical feature by truncating the minutes from the exact time. I also created a "timeofday" categorical feature using the data from exploration #5 above: day (6am-3pm), evening (4pm-6pm), and night (6pm-6am).
+	* Instead of using "time" as a feature, I created an "hour" categorical feature by truncating the minutes from the exact time. I also created a "timeofday" categorical feature using the data from exploration #5 above: day (6am-3pm), evening (4pm-6pm), and night (7pm-6am).
 	* Instead of using "day" as a feature, I created a "weekend" categorical feature (yes=weekend, no=weekday).
-	* There were a very small number of cars with a car_age of 30 to 75 years. Since I was using car_age as a continuous feature, I decided to convert all car ages over 30 to be exactly 30, under the theory that the purchase behavior of those users might be similar.
+	* There were a very small number of cars with a "car_age" of 30 to 75 years. Since I was using car_age as a continuous feature, I decided to convert all car ages over 30 to be exactly 30, under the theory that the purchase behavior of those users might be similar.
 	* Because I discovered clusters of states in which customers seemed to exhibit similar behaviors, I manually grouped states using a "stategroup" categorical feature. (This also allowed me to use stategroup as a feature in a random forest model, because the `randomForest` package in R is limited to categorical variables with 32 levels.)
 
 3. **"Conceptual" features:** I created a few features to represent "concepts" by combining different features, under the theory that the concepts might have better predictive power than the individual features (in a way that might not be captured by an interaction term).
@@ -70,9 +83,7 @@ The dataset provided by Kaggle included 25 features. I used some of those featur
 	* I created an "agediff" continuous feature that was simply the age difference between the youngest and oldest covered individuals.
 	* I created an "individual" categorical feature for any customer whose group size was 1 and the "agediff" was 0.
 
-4. **Features with missing values:** As discussed in data exploration #1 above, I imputed missing values for risk_factor, C_previous, and duration_previous.
-
-5. **Features to represent past quotes:** When anticipating the model building process, I knew from item #4 of data exploration (above) that the final quote before purchase would have the best predictive power of the actual purchase. Given that I only wanted to make a single prediction per customer, my plan was to only use that final quote before purchase (for each customer) as the input to the model. That seemed to waste a lot of available (and potentially useful) data, but I had a difficult time conceptualizing how to effectively integrate the not-final-quote data into the model. I came up with two solutions:
+4. **Features to represent past quotes:** When anticipating the model building process, I knew from item #4 of data exploration (above) that the final quote before purchase would have the best predictive power of the actual purchase. Given that I only wanted to make a single prediction per customer, my plan was to only use that final quote before purchase (for each customer) as the input to the model. That seemed to waste a lot of available (and potentially useful) data, but I had a difficult time conceptualizing how to effectively integrate the not-final-quote data into the model. I came up with two solutions:
 	* I used "shopping_pt" as a continuous feature, since it represented the number of quotes a customer requested before purchasing. My theory (based on data exploration #4) was that a higher shopping_pt indicated a greater likelihood that the customer would simply choose the last quote, making shopping_pt a useful predictor.
 	* I created a new continuous feature called "stability", which was a number between 0 and 1 that represented how much a given customer changed their plan options during the quoting process. I created the formula stability=(numquotes - uniqueplansviewed + 1)/numquotes. For example, a customer who requested 8 quotes but only looked at 3 different plan combinations would have a stability of (8-3+1)/8 = 0.75, whereas if they had looked at 8 different plan combinations, their stability would be (8-8+1)/8 = 0.125. My theory was that a low stability would indicate a high likelihood of changing options between a customer's final quote and actual purchase.
 
@@ -83,7 +94,7 @@ The dataset provided by Kaggle included 25 features. I used some of those featur
 
 2. Another huge challenge (closely related to challenge #1) is that there is a huge "risk" when predicting any plan other than the last quote. As discussed in data exploration #4, you can obtain roughly 50% accuracy on the test set simply by using the last quote as your prediction. Thus, if you predict anything other than that last quote for a given customer, you have a 50% chance of "breaking" an already correct prediction. The only way to mitigate that risk is by developing a predictive model that is more than 50% accurate. And since I had decided to predict each of the 7 options individually (based on data exploration #2), those 7 predictive models would each have to be at least 90% accurate in order for the combined prediction to be at least 50% accurate (since 0.90^7 roughly equals 0.50). 90% accuracy for 7 different models is quite a high bar!
 
-3. As discussed in feature engineering #5, it was challenging to determine how to use the not-final-quote data.
+3. As discussed in feature engineering #4, it was challenging to determine how to use the not-final-quote data.
 
 4. One of my hypotheses was that customers who do change from their final quote might simply be changing to a set of options that they looked at previously. If this was often the case, it could make prediction significantly easier, and eliminate the need to predict each option individually. Unfortunately, when I examined the quote history of 15 random customers (in the training set) that did change from their final quote, I found that every single one of them purchased a combination of options that they never looked at during the quoting process.
 
@@ -96,7 +107,7 @@ The dataset provided by Kaggle included 25 features. I used some of those featur
 
 Below is a description of the model building process I went through. Because I'm most fluent in R, I built all of the models (and did all of the visualization and feature engineering) in R.
 
-1. As discussed in data exploration #4, my baseline strategy (also used by the vast majority of competitors) was to predict the purchase options for each customer simply by using their last quote. That produced an accuracy score on the public leaderboard of 0.53793. (The public leaderboard represents your accuracy on 30% of the test set.) All of my follow-up models simply revised the baseline predictions, rather than predicting every customer "from scratch".
+1. As discussed in data exploration #4, my baseline strategy was to predict the purchase options for each customer simply by using their last quote. That produced a score on the public leaderboard of 0.53793, which represents your accuracy on 30% of the test set. (Since around half of the competitors [obtained](http://www.kaggle.com/c/allstate-purchase-prediction-challenge/leaderboard) that exact score, one can infer that this strategy was widely used.) All of my follow-up models simply revised the baseline predictions, rather than predicting every customer "from scratch".
 
 2. As discussed in data exploration #6, I noticed correlations between certain options. For example, D is nearly always 3 if C equals 4 for a given customer. Using these and other "rules" that I developed during the exploratory process, I revised the baseline predictions by simply converting any pairs of options that seemed unlikely. In other words, if one of my baseline predictions had C equals 4 and D not equal to 3, I changed D to 3. I submitted a variety of these rule-based predictions, and every time my score on the public leaderboard decreased. I realized the flaw in this approach: For any customer where the baseline was predicting incorrectly, it's impossible to know how many of their options are incorrect. Thus the rule-based approach may fix a single incorrect option, but it also "breaks" baseline predictions that were already correct at a much higher rate.
 
@@ -108,7 +119,7 @@ Below is a description of the model building process I went through. Because I'm
 
 6. I moved on to the second stage of model building, namely predicting the new set of options for those customers who I'm predicting will change from their last quote. As discussed in data exploration #2, I had decided to predict each option individually, rather than try to predict the set of options as a whole. Since most of the 7 options have more than 2 classes, I explored different R packages for multinomial classification. I first considered the `mlogit` and `mnlogit` packages, but found the documentation confusing. I tried using the `glmnet` package for regularized multinomial classification, but it took an exceptionally long time to run. I ended up using both random forests (from the `randomForest` package) and the multinom function (from the `nnet` package), both of which ran relatively quickly.
 
-7. During the multinomial classification process, I tried two different approaches. To contrast the approaches, we can use the "A" option as an example. For approach #1, I tried to predict A (for each customer) by giving the model every feature other than A in that customer's final quote. That approach only produced 70%-80% accuracy (across the 7 options). For approach #2, I gave the model the same features as approach #1 but also gave it "current A" as a feature, and asked it to predict "final A". The accuracy for approach #2 rose significantly, but only because the model simply predicted "final A" to be equal to "current A" 99.9% of the time, making it a useless model.
+7. During the multinomial classification process, I tried two different approaches. To contrast the approaches, we can use the "A" option as an example. For approach #1, I tried to predict A (for each customer) by giving the model every feature other than A in that customer's final quote. That approach only produced 70%-80% accuracy on the training set (across each of the 7 options). For approach #2, I gave the model the same features as approach #1 but also gave it "current A" as a feature, and asked it to predict "final A". The training set accuracy for approach #2 rose significantly, but only because the model simply predicted "final A" to be equal to "current A" 99.9% of the time, making it a useless model.
 
 8. To be continued...
 
