@@ -27,7 +27,7 @@ Here are some of my key findings from the exploratory process, and what I conclu
 1. **Missing values:**
 	* risk_factor was NA is 36.1% of the training set and 38.0% of the test set. As a predictor that I considered potentially useful, I decided to impute the risk_factor for those customers using a linear regression model based on other customer characteristics.
 	* C_previous and duration_previous were NA for 2.8% of the training set and 4.9% of the test set. I decided that those NA values were probably indicative of new customers, and thus I imputed values of 0 for duration_previous and "none" (a categorical variable) for C_previous.
-	* location was NA for 0.3% of the test set. I decided to impute the location using ??? (not done yet)
+	* location was NA for 0.3% of the test set. I decided to impute the location for each customer by copying the location from another customer in the same state.
 
 2. **Unique plans:**
 	* Out of the 2,304 possible combinations of the 7 options, the training set included 1,809 unique plans and the test set included 1,596 unique plans. The union between those two sets included 1,878 unique plans, indicating that the test set contained 69 plans that were in the test set but never appeared in the training set.
@@ -66,6 +66,7 @@ The [dataset provided by Kaggle](http://www.kaggle.com/c/allstate-purchase-predi
 		* cost: cost of quoted options
 	* Categorical variables:
 		* state: customer location
+		* location: ID of customer location (more specific than state)
 		* homeowner: yes or no
 		* car_value: value of customer's car when new, expressed only as letters 'a' through 'i'
 		* married_couple: yes or no
@@ -86,6 +87,9 @@ The [dataset provided by Kaggle](http://www.kaggle.com/c/allstate-purchase-predi
 4. **Features to represent past quotes:** When anticipating the model building process, I knew from item #4 of data exploration (above) that the final quote before purchase would have the best predictive power of the actual purchase. Given that I only wanted to make a single prediction per customer, my plan was to only use that final quote before purchase (for each customer) as the input to the model. That seemed to waste a lot of available (and potentially useful) data, but I had a difficult time conceptualizing how to effectively integrate the not-final-quote data into the model. I came up with two solutions:
 	* I used "shopping_pt" as a continuous feature, since it represented the number of quotes a customer requested before purchasing. My theory (based on data exploration #4) was that a higher shopping_pt indicated a greater likelihood that the customer would simply choose the last quote, making shopping_pt a useful predictor.
 	* I created a new continuous feature called "stability", which was a number between 0 and 1 that represented how much a given customer changed their plan options during the quoting process. I created the formula stability=(numquotes - uniqueplansviewed + 1)/numquotes. For example, a customer who requested 8 quotes but only looked at 3 different plan combinations would have a stability of (8-3+1)/8 = 0.75, whereas if they had looked at 8 different plan combinations, their stability would be (8-8+1)/8 = 0.125. My theory was that a low stability would indicate a high likelihood of changing options between a customer's final quote and actual purchase.
+
+5. **Feature to represent plan frequency:**
+	* I created a "planfreq" continous feature that was simply the frequency with which a given plan occurred across all customers. My theory was that a plan with a low frequency might indicate a greater likelihood of switching options, since perhaps that combination of options is unpopular for a reason.
 
 
 ## Challenges with the Data
@@ -115,50 +119,45 @@ Below is a description of the model building process I went through. Because I'm
 
 4. For predicting who would change, I began with logistic regression on the training set and created a 5-fold cross-validation framework to predict test set accuracy. I also tried random forests, but stuck with logistic regression for the time being because it ran much quicker and thus allowed me to iterate much more quickly through different models.
 
-5. My prediction accuracy (of which customers would change) barely increased over the null error rate, regardless of which features I included in the model. Therefore, I decided to instead optimize my model for precision and set a high threshold for predicting change. In other words, I would only be predicting change for a very small number of customers, but I would be highly confident that those customers would change. I created a new 5-fold cross-validation framework to calculate precision of my "change" predictions, and managed to get 80% precision. I then tested this method by predicting change for the test set, changing my baseline predictions for that small number of customers to "9999999" (definitely incorrect), and then see how my public leaderboard score was affected. It appeared that this method was about 75% accurate on the test set, which validated this approach.
+5. My prediction accuracy (of which customers would change) barely increased over the null error rate, regardless of which features I included in the model. Therefore, I decided to instead optimize my model for precision and set a high threshold for predicting change. In other words, I would only be predicting change for a very small number of customers, but I would be highly confident that those customers would change. I created a new 5-fold cross-validation framework to calculate precision of my "change" predictions, and managed to get 91% precision. I then tested this method by predicting change for the test set, changing my baseline predictions for that small number of customers to "9999999" (definitely incorrect), and then see how my public leaderboard score was affected. It appeared that this method was about 75% accurate on the test set, which validated this approach.
 
-6. I moved on to the second stage of model building, namely predicting the new set of options for those customers who I'm predicting will change from their last quote. As discussed in data exploration #2, I had decided to predict each option individually, rather than try to predict the set of options as a whole. Since most of the 7 options have more than 2 classes, I explored different R packages for multinomial classification. I first considered the `mlogit` and `mnlogit` packages, but found the documentation confusing. I tried using the `glmnet` package for regularized multinomial classification, but it took an exceptionally long time to run. I ended up using both random forests (from the `randomForest` package) and the multinom function (from the `nnet` package), both of which ran relatively quickly.
+6. I repeated step #5 of the model building process using random forests instead of logistic regression, to see if that would improve my precision. I again created a 5-fold cross-validation framework and set a high threshold for predicting change by examining the fraction of out-of-bag "votes" that predicted change. Despite some effort at tuning the model, I was not able to improve upon the results from logistic regression.
 
-7. During the multinomial classification process, I tried two different approaches. To contrast the approaches, we can use the "A" option as an example. For approach #1, I tried to predict A (for each customer) by giving the model every feature other than A in that customer's final quote. That approach only produced 70%-80% accuracy on the training set (across each of the 7 options). For approach #2, I gave the model the same features as approach #1 but also gave it "current A" as a feature, and asked it to predict "final A". The training set accuracy for approach #2 rose significantly, but only because the model simply predicted "final A" to be equal to "current A" 99.9% of the time, making it a useless model.
+7. I moved on to the second stage of model building, namely predicting the new set of options for those customers who I'm predicting will change from their last quote. As discussed in data exploration #2, I had decided to predict each option individually, rather than try to predict the set of options as a whole. Since most of the 7 options have more than 2 classes, I explored different R packages for multinomial classification. I first considered the `mlogit` and `mnlogit` packages, but found the documentation confusing. I tried using the `glmnet` package for regularized multinomial classification, but it took an exceptionally long time to run. I ended up using both random forests (from the `randomForest` package) and the multinom function (from the `nnet` package), both of which ran relatively quickly.
 
-8. To be continued...
+8. During the multinomial classification process, I tried three different approaches. To explain the approaches, we can use the "A" option as an example:
+	* For approach #1, I tried to predict A (for each customer) by giving the model every feature other than A in that customer's final quote. That approach only produced 60%-80% accuracy on the training set (across each of the 7 options), making this approach too inaccurate to be useful.
+	* For approach #2, I gave the model the same features as approach #1 but also gave it "current A" as a feature, and asked it to predict "final A". The training set accuracy for approach #2 rose significantly, but only because the model simply predicted "final A" to be equal to "current A" 99.9% of the time, making it a useless model.
+	* For approach #3, I revised approach #2 by only training the model on the subset of data for which change was predicted. Unfortunately, this approach performed no better than approach #1.
 
 
 ## Ideas for improving the models
 
 These are rough notes for myself about things I haven't yet tried. If I had unlimited time, I'd try all of them! For the final paper, I'll move the things I actually did to the section above.
 
-1. Use a new approach for multinomial classification that is essentially a hybrid of "approach #1" and "approach #2".
+1. Among records where change is predicted (and plan is rare?), try manually fixing them.
 
-2. For multinomial classification, use "approach #2" but only train the model on the subset of the data where I am already predicting change. (Possibly also lower the threshold for predicting change.)
+2. Experiment with interactions that make sense (to improve change prediction)
 
-3. For multinomial classification, tune random forests using variable selection, increase ntree, and reduce mtry.
+3. Feature selection using the `relaimpo` and `bestglm` packages
 
-4. For predicting changed, try random forests but set a high threshold by examining the votes.
+4. Use the quote before the last quote as a set of additional features (A through G, day, time, cost)
 
-5. Impute missing values for location - using state? using rfImpute? using na.action=na.roughfix or na.action=na.omit for random forests?
+5. Further tuning of randomForest for predicting change (variable selection, ntree, mtry)
 
-6. Try `rpart` package instead of `randomForest` package (takes care of NA values automatically)
+6. Predict change using a bunch of models and then average the results
 
-7. Use the quote before the last quote as a set of additional features (A through G, day, time, cost)
+7. When predicting change, instead of using a high cutoff and then only predicting new values for those customers, instead pass the "change probability" as a feature to the next model.
 
-8. Experiment with interactions that make sense
+8. Come up with a better way to take advantage of interactions and dependencies between options.
 
-9. Feature selection using the `relaimpo` and `bestglm` packages
+9. Come up with more ways of incorporating the not-final-quote data.
 
-10. Predict change using a bunch of models and then average the results
+10. Truncate the training set to match the test set distribution.
 
-11. When predicting change, instead of using a high cutoff and then only predicting new values for those customers, instead pass the "change probability" as a feature to the next model.
+11. Clustering, then predict separately for clusters?
 
-12. Come up with a better way to take advantage of interactions and dependencies between options.
-
-13. Come up with more ways of incorporating the not-final-quote data.
-
-14. Truncate the training set to match the test set distribution.
-
-15. Clustering, then predict separately for clusters?
-
-16. PCA?
+12. PCA?
 
 
 ## Results
