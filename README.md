@@ -1,5 +1,7 @@
-## Final Project: Allstate Purchase Prediction Challenge on Kaggle
+## Kaggle: Allstate Purchase Prediction Challenge
 
-Here is the [current draft of my paper](allstate-paper.md). I expect the final version to be largely the same, except I'll expand the "Model Building" section and fill out the "Results" and "Conclusion" sections. I'll also add my code and presentation slides.
+For my final project with the [General Assembly Data Science](https://generalassemb.ly/education/data-science) class [in DC](https://github.com/ajschumacher/gadsdc), I competed in Kaggle's [Allstate Purchase Prediction Challenge](http://www.kaggle.com/c/allstate-purchase-prediction-challenge).
 
-I'll make this a public repo as soon as the competition ends, which is May 19 at 8pm Eastern Time.
+Here is my [project paper](allstate-paper.md) and my [R code](allstate-code.R).
+
+Per the competition rules surrounding the sharing of code, I created this as a private repository and did not make it public until after the competition ended on May 19.
