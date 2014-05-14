@@ -1,6 +1,6 @@
 ## Allstate Option Dependencies
 
-As discussed in my [paper](allstate-paper.md) in Data Exploration section 6, I compiled a loose set of "rules" that attempted to capture dependencies between different options. In Model Building section 9 of the paper, I used these rules to manually "fix" the predicted plan for customers that my model predicted had a strong likelihood of changing options between their final quote and the purchase point.
+As discussed in my [paper](../allstate-paper.md) in Data Exploration section 6, I compiled a loose set of "rules" that attempted to capture dependencies between different options. In Model Building section 9 of the paper, I used these rules to manually "fix" the predicted plan for customers that my model predicted had a strong likelihood of changing options between their final quote and the purchase point.
 
 * Option A (0, 1, 2)
 	* if B=1 or C=3 or D=3 or E=1 or F=1/2, more likely to choose A=1

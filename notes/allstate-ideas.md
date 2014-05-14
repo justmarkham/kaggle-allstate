@@ -1,6 +1,6 @@
 ## Ideas for improving my Allstate predictive models
 
-As mentioned in my [paper](allstate-paper.md) in Model Building section 12, I came up with many ideas for how to improve my predictive models that I didn't actually have time to execute. My rough notes are listed below:
+As mentioned in my [paper](../allstate-paper.md) in Model Building section 12, I came up with many ideas for how to improve my predictive models that I didn't actually have time to execute. My rough notes are listed below:
 
 1. Rather than coming up with a list of "unlikely" plans and always predicting a replacement plan, selectively predict whether to replace that plan for each customer based upon their characteristics.
 2. Rather than always predicting the same replacement plan for a given "unlikely" plan, change which replacement plan to predict based upon the characteristics of each customer.
