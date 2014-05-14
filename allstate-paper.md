@@ -147,39 +147,34 @@ Below is a description of the model building process I went through. Because I'm
 	* Once I determined the thresholds, I created a function that would allow me to input different threshold values and see how many different predictions would be replaced, as well as see the table of the unlikely plans and their replacements.
 	* I experimented with different threshold values and used submissions to the public leaderboard as a gauge of which values made the most sense. The threshold values which produced the best results were a maximum purchase percentage of 5%, a minimum plan count of 50, and a minimum commonality score of 5%. This "fixed" 12 different plans that were originally predicted for 336 customers (about 0.6% of customers), and produced a score of 0.53853. That score is only a small improvement over the baseline (0.53793), but was enough to move me up to the top 15% of the leaderboard.
 
+11. Continuing...
 
-## Ideas for improving the models
-
-These are rough notes for myself about things I haven't yet tried. If I had unlimited time, I'd try all of them! For the final paper, I'll move the things I actually did to the section above.
-
-1. Experiment with interactions that make sense (to improve change prediction)
-
-2. Feature selection using the `relaimpo` and `bestglm` packages
-
-3. Use the quote before the last quote as a set of additional features (A through G, day, time, cost)
-
-4. Further tuning of randomForest for predicting change (variable selection, ntree, mtry)
-
-5. Predict change using a bunch of models and then average the results
-
-6. When predicting change, instead of using a high cutoff and then only predicting new values for those customers, instead pass the "change probability" as a feature to the next model.
-
-7. Come up with a better way to take advantage of interactions and dependencies between options.
-
-8. Come up with more ways of incorporating the not-final-quote data.
-
-9. Truncate the training set to match the test set distribution.
-
-10. Clustering, then predict separately for clusters?
-
-11. PCA?
+12. Although I came up with [many more ideas](allstate-ideas.md) for how to improve my predictive model, I ultimately ran out of time due to the end of the competition period.
 
 
-## Results
+## Business Applications and Production Implementation
 
-This will discuss my results, as well as the leaderboard results and commentary about the leaderboard.
+The [Kaggle description of this challenge](http://www.kaggle.com/c/allstate-purchase-prediction-challenge) summarized the goal of this competition as follows: "If the eventual purchase can be predicted sooner in the shopping window, the quoting process is shortened and the issuer is less likely to lose the customer's business." The techniques described throughout this paper could likely be applied to any business in which customers are deciding between multiple products (or multiple options for the same product). If the business can gain an insight into which product or option a customer is likely to end up choosing, they could nudge the customer toward that product (in order to increase their conversion rate), or instead nudge the customer toward a slightly more expensive product (in order to maximize their profit from that sale).
+
+The implementation details of such a system would depend upon the specific application, but the two critical factors would be how to gather data about the user before (or during) the shopping process, and how to predict the most likely purchase in a real-time manner. Two ideas for addressing the latter issue are precalculating the predictions for clusters of customers or encoding the prediction algorithm into a tree-like set of rules, either of which would allow predictions to be "served up" to the user in a near real-time fashion.
 
 
-## Conclusion
+## Results and Key Learnings
 
-Concluding thoughts on what worked, what didn't, and the business applications.
+Because the public leaderboard only reflects a competitor's score on 30% of the test set, it is impossible to know what the final results will be until the competition closes on May 19. However, it seems very likely that the final rankings will be similar to the public rankings.
+
+As of May 13, the public leaderboard includes 1492 competitors. 714 of those competitors have a score exactly matching the baseline approach (0.53793), with 426 below the baseline and 352 above the baseline. With my best score of 0.53853, I am currently ranked 217th. The top competitor has beaten the baseline by less than 1% (0.54529), clearly indicating that this is a very challenging predictive problem.
+
+I learned many lessons about the predictive modeling process by participating in this competition:
+
+1. **Early in the competition, try many different approaches:** Although I did iterate through a variety of different approaches during the course of the competition, it was not until the final week of the competition that I tried a completely different approach that ended up actually beating the baseline score. Had I spent more time earlier on iterating through different approaches, I may have had much more time to refine and build upon the approach that ended up working.
+
+2. **Smarter strategies trump more modeling and more data:** Although this problem appeared to be one of predicting insurance options based upon customer data and behavior, a key insight was that it was actually a problem of predicting option combinations that were unlikely to be purchased. Certainly the best competitors are tackling both problems at once, but I would argue that the second problem was the less obvious but more important problem to tackle. Solving that problem does not actually require most of the provided data, and (at least in my case) does not use any traditional machine learning models. This demonstrates that you don't have to use data just because you have it, and you don't have to feed your data into machine learning models just because you know how to use them.
+
+3. **Real-world data is hard to work with:** Even though the data provided by Kaggle was relatively clean, that did not mean it was easy to work with. It was a challenging problem simply figuring out how to train a model on the available data, because it's not obvious how to "learn" something from each quote requested by a customer. I would imagine that in the real world, this is often a major issue, and is a sharp contrast with a textbook problem in which the data has already been simplified for you!
+
+4. **Algorithms and processes that allow for rapid iteration are priceless:** Although random forests can often outperform other algorithms in predictive accuracy, I found myself mostly using logistic regression because I could iterate through different approaches in seconds or minutes rather than hours. In addition, the reusable functions that I built for data pre-processing, cross-validation, and other tasks were time well spent because they also allowed me to iterate quickly with minimal code changes.
+
+5. **Learn from others around you:** Some of my key insights (and ideas for different approaches) came from paying close attention to the Kaggle forums. Because there are so many different ways to go about solving a given problem, it is crucial to learn from those around you in order to be exposed to different ways of thinking.
+
+I look forward to reading about the approaches used by other competitors, and getting feedback from other competitors on my approach!
