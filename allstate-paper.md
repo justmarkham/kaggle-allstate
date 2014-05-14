@@ -149,10 +149,10 @@ Below is a description of the model building process I went through. Because I'm
 
 11. Continuing...
 
-12. Although I came up with [many more ideas](allstate-ideas.md) for how to improve my predictive model, I ultimately ran out of time due to the end of the competition period.
+12. Although I came up with [many more ideas](notes/allstate-ideas.md) for how to improve my predictive model, I ultimately ran out of time due to the end of the competition period.
 
 
-## Business Applications and Production Implementation
+## Business Applications and Implementation
 
 The [Kaggle description of this challenge](http://www.kaggle.com/c/allstate-purchase-prediction-challenge) summarized the goal of this competition as follows: "If the eventual purchase can be predicted sooner in the shopping window, the quoting process is shortened and the issuer is less likely to lose the customer's business." The techniques described throughout this paper could likely be applied to any business in which customers are deciding between multiple products (or multiple options for the same product). If the business can gain an insight into which product or option a customer is likely to end up choosing, they could nudge the customer toward that product (in order to increase their conversion rate), or instead nudge the customer toward a slightly more expensive product (in order to maximize their profit from that sale).
 
