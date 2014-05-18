@@ -3,11 +3,15 @@
 ### https://github.com/justmarkham/kaggle-allstate
 
 # Notes about this file:
-# 1. Most of the code is explained in my paper (available in the GitHub repo).
+# 1. Most of the code is explained in my paper:
+#    https://github.com/justmarkham/kaggle-allstate/blob/master/allstate-paper.md
 # 2. For the sake of brevity, a lot of my exploratory code is not included.
 # 3. Many of the variables are poorly named, my apologies.
 # 4. The code assumes that "train.csv" and "test_v2.csv" are in your working
 #    directory.
+# 5. To generate my best set of predictions, simply load the required libraries
+#    and then run the "Loading Data" section and "Model Building Part 10". All
+#    other code is irrelevant.
 
 
 # Load required libraries
@@ -413,17 +417,6 @@ glm.pred <- ifelse(glm.probs>0.9, "Yes", "No")
 # update changed variable on testsub to reflect prediction
 testsub$changed <- as.factor(glm.pred)
 group11 <- testsub[testsub$changed=="Yes", "customer_ID"]
-
-# examine customers
-testsub[testsub$customer_ID=="10006040", ]
-testsub[testsub$customer_ID=="10011049", ]
-testsub[testsub$customer_ID=="10026297", ]
-testsub[testsub$customer_ID=="10027789", ]
-testsub[testsub$customer_ID=="10054016", ]
-testsub[testsub$customer_ID=="10054825", ]
-testsub[testsub$customer_ID=="10068571", ]
-testsub[testsub$customer_ID=="10113734", ]
-testsub[testsub$customer_ID=="10116125", ]
 
 # for records predicting changed, start by predicting plan, then modify each one
 testsub$planpred <- testsub$plan
