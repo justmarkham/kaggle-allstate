@@ -314,7 +314,6 @@ glm.pred <- ifelse(glm.probs>0.85, "Yes", "No")
 
 # update "changed" variable on testsub to reflect prediction
 testsub$changed <- as.factor(glm.pred)
-group6 <- testsub[testsub$changed=="Yes", "customer_ID"]
 
 # for records predicting changed, planpred = 9999999
 testsub$planpred <- ifelse(testsub$changed=="Yes", "9999999", testsub$plan)
@@ -416,7 +415,6 @@ glm.pred <- ifelse(glm.probs>0.9, "Yes", "No")
 
 # update changed variable on testsub to reflect prediction
 testsub$changed <- as.factor(glm.pred)
-group11 <- testsub[testsub$changed=="Yes", "customer_ID"]
 
 # for records predicting changed, start by predicting plan, then modify each one
 testsub$planpred <- testsub$plan
@@ -475,7 +473,8 @@ fixplans <- function(planpurmax, plancntmin, commonmin) {
     print(sum(testsub$planpred %in% fixes$old))
     
     # make fixes
-    for (i in 1:55716) {
+    nrowtestsub <- nrow(testsub)
+    for (i in 1:nrowtestsub) {
         if (testsub$planpred[i] %in% fixes$old) {
             testsub$planpred[i] <-
             	fixes$new[which(fixes$old==testsub$planpred[i])]
@@ -505,6 +504,6 @@ nrow(ts[ts$planpred!=ts$plan & ts$changed=="Yes", ])
 ts$planpred <- ifelse(ts$changed=="No", ts$plan, ts$planpred)
 nrow(ts[ts$planpred!=ts$plan,])
 
-# submit: 0.53787, 1 under baseline
+# submit: 0.53787, 1 below baseline
 pred <- data.frame(customer_ID = ts$customer_ID, plan = ts$planpred)
 write.csv(pred, file="submit24.csv", row.names=FALSE, quote=FALSE)
