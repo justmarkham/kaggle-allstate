@@ -38,19 +38,19 @@ preprocess <- function(data) {
     data$hour <- as.integer(substr(data$time, 1, 2))
     data$timeofday <- as.factor(ifelse(data$hour %in% 6:15, "day",
                                 ifelse(data$hour %in% 16:18, "evening",
-                                	"night")))
+                                    "night")))
     data$weekend <- as.factor(ifelse(data$day %in% 0:4, "No", "Yes"))
     data$family <- as.factor(ifelse(data$group_size > 2 & data$age_youngest <
-    								25 & data$married_couple==1, "Yes", "No"))
+                                    25 & data$married_couple==1, "Yes", "No"))
     data$agediff <- data$age_oldest-data$age_youngest
     data$individual <- as.factor(ifelse(data$agediff==0 & data$group_size==1,
-    									"Yes", "No"))
+                                        "Yes", "No"))
     data$stategroup <- as.factor(ifelse(data$state %in% c("SD","ND"), "g1",
                                  ifelse(data$state %in% c("AL","WY"), "g2",
                                  ifelse(data$state %in% c("OK","ME","AR",
-                                 	"WV"), "g3",
+                                     "WV"), "g3",
                                  ifelse(data$state %in% c("DC","NE","GA"),
-                                 	"g5", "g4")))))
+                                     "g5", "g4")))))
     
     # fix NA's for duration_previous and C_previous
     data$duration_previous[is.na(data$duration_previous)] <- 0
@@ -61,7 +61,7 @@ preprocess <- function(data) {
     datanorisk <- data[is.na(data$risk_factor), ]
     datarisk <- data[!is.na(data$risk_factor), ]
     lm.fit <- lm(risk_factor ~ age_youngest*group_size+married_couple+
-    	homeowner, data=datarisk)
+        homeowner, data=datarisk)
     lm.pred <- predict(lm.fit, newdata=datanorisk)
     data$risk_factor[is.na(data$risk_factor)] <- round(lm.pred, 0)
     
@@ -94,14 +94,14 @@ trainex2$changelog <- changelog
 
 # compute "stability" feature from trainex and add to trainex2
 customerstability <- trainex %.% group_by(customer_ID) %.%
-	summarise(quotes=n(), uniqueplans=n_distinct(plan),
-	stability=(quotes-uniqueplans+1)/quotes)
+    summarise(quotes=n(), uniqueplans=n_distinct(plan),
+    stability=(quotes-uniqueplans+1)/quotes)
 trainex2$stability <- customerstability$stability
 
 # compute "planfreq" feature on trainex2
 nrowtrainex2 <- nrow(trainex2)
 planfreqs <- trainex2 %.% group_by(plan) %.%
-	summarise(planfreq=n()/nrowtrainex2)
+    summarise(planfreq=n()/nrowtrainex2)
 trainex2 <- left_join(trainex2, planfreqs)
 
 # trainex3 is identical to trainex2 but also includes purchases
@@ -141,16 +141,16 @@ testsub <- left_join(testsub, planfreqs)
 
 # check for NA values
 sapply(train, function(x) mean(is.na(x)))
-	# risk_factor, C_previous, duration_previous
+    # risk_factor, C_previous, duration_previous
 sapply(test, function(x) mean(is.na(x)))
-	# risk_factor, C_previous, duration_previous, location
+    # risk_factor, C_previous, duration_previous, location
 
 uniquetrainplan <- unique(train$plan)
 uniquetestplan <- unique(test$plan)
-	# plans in train: 1809
-	# plans in test: 1596
-	# union: 1878 (69 plans in test that are not in train)
-	# intersection: 1527
+    # plans in train: 1809
+    # plans in test: 1596
+    # union: 1878 (69 plans in test that are not in train)
+    # intersection: 1527
 
 
 ## VISUALIZATIONS ##
@@ -173,12 +173,12 @@ s <- split(trainex2, trainex2$shopping_pt)
 s2 <- sapply(s, function(x) sum(x$changed=="No")/nrow(x))
 s2b <- sapply(s, nrow)
 acclastentry <- data.frame(numshoppoints=as.integer(names(s2)), accuracy=s2,
-	Observations=s2b)
+    Observations=s2b)
 ggplot(acclastentry) + aes(numshoppoints, accuracy, size=Observations) +
-	geom_point() + geom_line(size=0.5) + scale_x_continuous(breaks=1:12) +
-	theme(panel.grid.minor=element_blank()) + labs(x="Number of Shopping
-	Points", y="Prediction Accuracy", title="Effect of Number of Shopping
-	Points on Predictive Power of Last Quote")
+    geom_point() + geom_line(size=0.5) + scale_x_continuous(breaks=1:12) +
+    theme(panel.grid.minor=element_blank()) + labs(x="Number of Shopping
+    Points", y="Prediction Accuracy", title="Effect of Number of Shopping
+    Points on Predictive Power of Last Quote")
 ggsave("allstate-viz-2.png")
 
 # Viz 3: Effect of purchase hour on the predictive power of the final quote
@@ -196,29 +196,29 @@ ggsave("allstate-viz-3.png")
 C_names <- list("1"="C=1", "2"="C=2", "3"="C=3", "4"="C=4")
 C_labeller <- function(variable, value){ return(C_names[value]) }
 ggplot(trainsub, aes(D)) + geom_bar() + facet_grid(. ~ C,
-	labeller=C_labeller) + labs(x="Customer Selection of Option	D (1, 2, 3)",
-	y="Frequency", title="Customer selection of Option D based on their
-	selection for Option C")
+    labeller=C_labeller) + labs(x="Customer Selection of Option D (1, 2, 3)",
+    y="Frequency", title="Customer selection of Option D based on their
+    selection for Option C")
 ggsave("allstate-viz-4.png")
 
 # Viz 5: Clustering of states
 # based on: http://is-r.tumblr.com/post/37708137014/us-state-maps-using-map-data
 states <- map_data("state")
 states$grp <- as.factor(ifelse(states$region %in% c("south dakota",
-		"north dakota"), "1 (least likely)",
+        "north dakota"), "1 (least likely)",
     ifelse(states$region %in% c("alabama","wyoming"), "2",
     ifelse(states$region %in% c("oklahoma","maine","arkansas","west virginia"),
-    	"3",
+        "3",
     ifelse(states$region %in% c("colorado","connecticut","delaware","florida",
-    	"iowa","idaho","indiana","kansas","kentucky","maryland","missouri",
-    	"mississippi","montana","new hampshire","new mexico","nevada",
-    	"new york","ohio","oregon","pennsylvania","rhode island","tennessee",
-    	"utah","washington","wisconsin"), "4",
+        "iowa","idaho","indiana","kansas","kentucky","maryland","missouri",
+        "mississippi","montana","new hampshire","new mexico","nevada",
+        "new york","ohio","oregon","pennsylvania","rhode island","tennessee",
+        "utah","washington","wisconsin"), "4",
     ifelse(states$region %in% c("district of columbia","nebraska","georgia"),
-    	"5 (most likely)", "unassigned"))))))
+        "5 (most likely)", "unassigned"))))))
 ggplot(states) + aes(x=long, y=lat, group=group, fill=grp) +
-	geom_polygon(color="black") + theme_bw() +
-	theme(panel.border=element_blank()) + scale_y_continuous(breaks=c()) +
+    geom_polygon(color="black") + theme_bw() +
+    theme(panel.border=element_blank()) + scale_y_continuous(breaks=c()) +
     scale_x_continuous(breaks=c()) + labs(title="Clustering of States
     Based on Customer Likelihood of Changing from Last Quote", fill="Cluster",
     x="", y="") + scale_fill_brewer(palette="Pastel1")
@@ -232,7 +232,7 @@ ggsave("allstate-viz-5.png")
 
 # Submit the baseline
 pred <- data.frame(customer_ID = testsub$customer_ID, plan = testsub$plan)
-write.csv(pred, file="submit1.csv", row.names=FALSE, quote=FALSE)	# 0.53793
+write.csv(pred, file="submit1.csv", row.names=FALSE, quote=FALSE)    # 0.53793
 
 # PART 2:
 
@@ -243,14 +243,14 @@ filter(testsub, C==4, D!=3)
 pred <- data.frame(customer_ID = testsub$customer_ID,
                    plan = paste0(testsub$A, testsub$B, testsub$C, testsub$D,
                                  testsub$E, testsub$F, testsub$G))
-write.csv(pred, file="submit2.csv", row.names=FALSE, quote=FALSE)   # 0.53769
+write.csv(pred, file="submit2.csv", row.names=FALSE, quote=FALSE)    # 0.53769
 
 # PART 4:
 
 # logistic regression for predicting "changed"
 glm.fit <- glm(changed ~ state+cost+A+C+D+E+F+G+age_oldest+age_youngest+
-	car_value+car_age+shopping_pt+timeofday+weekend+risk_factor+C_previous+
-	duration_previous+stability+planfreq, data=trainex2, family=binomial)
+    car_value+car_age+shopping_pt+timeofday+weekend+risk_factor+C_previous+
+    duration_previous+stability+planfreq, data=trainex2, family=binomial)
 summary(glm.fit)
 glm.probs <- predict(glm.fit, type="response")
 glm.pred <- ifelse(glm.probs>0.5, "Yes", "No")
@@ -265,9 +265,9 @@ set.seed(5)
 folds <- sample(rep(1:5, length = nrow(trainex2)))
 for(k in 1:5) {
     fit <- glm(changed ~ state+cost+A+C+D+E+F+G+age_oldest+age_youngest+
-    	car_value+car_age+shopping_pt+timeofday+weekend+risk_factor+C_previous+
-    	duration_previous+stability, data=trainex2[folds!=k, ],
-    	family=binomial)
+        car_value+car_age+shopping_pt+timeofday+weekend+risk_factor+C_previous+
+        duration_previous+stability, data=trainex2[folds!=k, ],
+        family=binomial)
     probs <- predict(fit, newdata=trainex2[folds==k, ], type="response")
     pred <- ifelse(probs>0.5, "Yes", "No")
     print(mean(pred==trainex2$changed[folds==k]))
@@ -275,8 +275,8 @@ for(k in 1:5) {
 
 # random forests for predicting "changed"
 rf.fit <- randomForest(changed ~ stategroup+cost+A+C+D+E+F+G+age_oldest+
-	age_youngest+car_value+car_age+shopping_pt+timeofday+weekend+risk_factor+
-	C_previous+duration_previous+stability+planfreq, data=trainex2, mtry=5)
+    age_youngest+car_value+car_age+shopping_pt+timeofday+weekend+risk_factor+
+    C_previous+duration_previous+stability+planfreq, data=trainex2, mtry=5)
 rf.pred <- ifelse(rf.fit$votes[, 2]>0.5, "Yes", "No")
 confusionMatrix(rf.pred, trainex2$changed, "Yes")
 
@@ -289,9 +289,9 @@ predyestotal <- 0
 tptotal <- 0
 for(k in 1:5) {
     fit <- glm(changed ~ state+cost+A+C+D+E+F+G+age_oldest+age_youngest+
-    	car_value+car_age+shopping_pt+timeofday+weekend+risk_factor+C_previous+
-    	duration_previous+stability+planfreq, data=trainex2[folds!=k, ],
-    	family=binomial)
+        car_value+car_age+shopping_pt+timeofday+weekend+risk_factor+C_previous+
+        duration_previous+stability+planfreq, data=trainex2[folds!=k, ],
+        family=binomial)
     probs <- predict(fit, newdata=trainex2[folds==k, ], type="response")
     pred <- as.factor(ifelse(probs>0.85, "Yes", "No"))
     predyes <- sum(pred=="Yes")
@@ -307,8 +307,8 @@ print(tptotal/predyestotal)
 
 # train model on trainex2 and predict changed on testsub
 glm.fit <- glm(changed ~ state+cost+A+C+D+E+F+G+age_oldest+age_youngest+
-	car_value+car_age+shopping_pt+timeofday+weekend+risk_factor+C_previous+
-	duration_previous+stability, data=trainex2, family=binomial)
+    car_value+car_age+shopping_pt+timeofday+weekend+risk_factor+C_previous+
+    duration_previous+stability, data=trainex2, family=binomial)
 glm.probs <- predict(glm.fit, newdata=testsub, type="response")
 glm.pred <- ifelse(glm.probs>0.85, "Yes", "No")
 
@@ -331,9 +331,9 @@ predyestotal <- 0
 tptotal <- 0
 for(k in 1:5) {
     fit <- randomForest(changed ~ stategroup+cost+A+C+D+E+F+G+age_oldest+
-    	age_youngest+car_value+car_age+shopping_pt+timeofday+weekend+
-    	risk_factor+C_previous+duration_previous+stability+planfreq,
-    	data=trainex2[folds!=k, ], mtry=5)
+        age_youngest+car_value+car_age+shopping_pt+timeofday+weekend+
+        risk_factor+C_previous+duration_previous+stability+planfreq,
+        data=trainex2[folds!=k, ], mtry=5)
     votes <- predict(fit, newdata=trainex2[folds==k, ], type="vote")
     pred <- as.factor(ifelse(votes[, 2]>0.85, "Yes", "No"))
     predyes <- sum(pred=="Yes")
@@ -351,44 +351,44 @@ print(tptotal/predyestotal)
 
 # multinom to predict A (repeat for each option)
 a.mn.fit <- multinom(A ~ .-customer_ID-record_type-day-time-location-plan-
-	hour-agediff-stategroup, data=trainex2)
+    hour-agediff-stategroup, data=trainex2)
 a.mn.pred <- predict(a.mn.fit, newdata=trainex2, type="class")
 confusionMatrix(a.mn.pred, trainsub$A)
 
 # multinom to predict Apurch (repeat for each option)
 a.mn.fit <- multinom(Apurch ~ .-customer_ID-record_type-day-time-location-
-	plan-hour-agediff-stategroup-Bpurch-Cpurch-Dpurch-Epurch-Fpurch-Gpurch-
-	planpurch, data=trainex3)
+    plan-hour-agediff-stategroup-Bpurch-Cpurch-Dpurch-Epurch-Fpurch-Gpurch-
+    planpurch, data=trainex3)
 a.mn.pred <- predict(a.mn.fit, newdata=trainex3, type="class")
 mean(a.mn.pred==trainex3$Apurch)
 mean(a.mn.pred==trainex3$A)
 
 # random forests to predict A (repeat for each option)
 a.rf.fit <- randomForest(A ~ .-customer_ID-record_type-day-time-location-
-	plan-hour-agediff-state, data=trainex2, importance=FALSE)
+    plan-hour-agediff-state, data=trainex2, importance=FALSE)
 mean(a.rf.fit$predicted==trainex2$A)
 mean(a.rf.fit$predicted==trainsub$A)
 
 # random forests to predict Apurch (repeat for each option)
 a.rf.fit <- randomForest(Apurch ~ .-customer_ID-record_type-day-time-location-
-	plan-hour-agediff-state-Bpurch-Cpurch-Dpurch-Epurch-Fpurch-Gpurch-
-	planpurch, data=trainex3, importance=FALSE)
+    plan-hour-agediff-state-Bpurch-Cpurch-Dpurch-Epurch-Fpurch-Gpurch-
+    planpurch, data=trainex3, importance=FALSE)
 mean(a.rf.fit$predicted==trainex3$Apurch)
 mean(a.rf.fit$predicted==trainex3$A)
 
 # random forests to predict Apurch, trained only on subset for which change is
-	# predicted (repeat for each option)
+    # predicted (repeat for each option)
 trainex4 <- trainex3[trainex3$changed=="Yes", ]
 a.rf.fit <- randomForest(Apurch ~ .-customer_ID-record_type-day-time-location-
-	plan-hour-agediff-state-Bpurch-Cpurch-Dpurch-Epurch-Fpurch-Gpurch-
-	planpurch, data=trainex4, importance=FALSE)
+    plan-hour-agediff-state-Bpurch-Cpurch-Dpurch-Epurch-Fpurch-Gpurch-
+    planpurch, data=trainex4, importance=FALSE)
 mean(a.rf.fit$predicted==trainex4$Apurch)
 mean(a.rf.fit$predicted==trainex4$A)
 
 # combine option predictions for A through G
 pred.plan <- paste0(a.rf.fit$predicted, b.rf.fit$predicted, c.rf.fit$predicted,
-	d.rf.fit$predicted, e.rf.fit$predicted, f.rf.fit$predicted,
-	g.rf.fit$predicted)
+    d.rf.fit$predicted, e.rf.fit$predicted, f.rf.fit$predicted,
+    g.rf.fit$predicted)
 
 # for people I predict changed in train, did I get it right?
 predchange.ix <- which(glm.pred=="Yes")
@@ -408,8 +408,8 @@ for (i in 1:length(predchange.cid)) {
 
 # train model on trainex2 and predict changed on testsub
 glm.fit <- glm(changed ~ state+cost+A+C+D+E+F+G+age_oldest+age_youngest+
-	car_value+car_age+shopping_pt+timeofday+weekend+risk_factor+C_previous+
-	duration_previous+stability+planfreq, data=trainex2, family=binomial)
+    car_value+car_age+shopping_pt+timeofday+weekend+risk_factor+C_previous+
+    duration_previous+stability+planfreq, data=trainex2, family=binomial)
 glm.probs <- predict(glm.fit, newdata=testsub, type="response")
 glm.pred <- ifelse(glm.probs>0.9, "Yes", "No")
 
@@ -438,7 +438,7 @@ write.csv(pred, file="submit11.csv", row.names=FALSE, quote=FALSE)
 
 # calculate change likelihood of plans
 rec <- train %.% group_by(plan) %.% summarise(planpur=mean(record_type),
-	plancnt=n()) %.% arrange(planpur, desc(plancnt))
+    plancnt=n()) %.% arrange(planpur, desc(plancnt))
 
 # function to "fix" plans based upon thresholds
 fixplans <- function(planpurmax, plancntmin, commonmin) {
@@ -453,16 +453,16 @@ fixplans <- function(planpurmax, plancntmin, commonmin) {
         cust <- unique(train[train$plan==rectop[i], "customer_ID"])
         # what are all the plans that those customers purchased?
         purplan <- train[train$customer_ID %in% cust & train$record_type==1,
-        	"plan"]
+            "plan"]
         # what was the most common purchased?
         rectopbest[i] <- names(sort(table(purplan), decreasing=TRUE))[1]
         # how common was it?
         rectopcommon[i] <- sort(table(purplan),
-        	decreasing=TRUE)[1]/length(purplan)
+            decreasing=TRUE)[1]/length(purplan)
     }
     
     fixes <- data.frame(old=rectop[rectopcommon>=commonmin],
-    	new=rectopbest[rectopcommon>=commonmin], stringsAsFactors=FALSE)
+        new=rectopbest[rectopcommon>=commonmin], stringsAsFactors=FALSE)
     fixes <- fixes[fixes$old!=fixes$new, ]
     print(nrow(fixes))
     print(fixes)
@@ -477,7 +477,7 @@ fixplans <- function(planpurmax, plancntmin, commonmin) {
     for (i in 1:nrowtestsub) {
         if (testsub$planpred[i] %in% fixes$old) {
             testsub$planpred[i] <-
-            	fixes$new[which(fixes$old==testsub$planpred[i])]
+                fixes$new[which(fixes$old==testsub$planpred[i])]
         }
     }
     
@@ -493,8 +493,8 @@ write.csv(pred, file="submit21.csv", row.names=FALSE, quote=FALSE)
 
 # predict change (for 12403 people, 100+ plans, 98 fixes)
 glm.fit <- glm(changed ~ state+cost+A+C+D+E+F+G+age_oldest+age_youngest+
-	car_value+car_age+shopping_pt+timeofday+weekend+risk_factor+C_previous+
-	duration_previous+stability+planfreq, data=trainex2, family=binomial)
+    car_value+car_age+shopping_pt+timeofday+weekend+risk_factor+C_previous+
+    duration_previous+stability+planfreq, data=trainex2, family=binomial)
 glm.probs <- predict(glm.fit, newdata=testsub, type="response")
 glm.pred <- ifelse(glm.probs>0.5, "Yes", "No")
 table(glm.pred)
