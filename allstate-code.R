@@ -320,7 +320,7 @@ testsub$planpred <- ifelse(testsub$changed=="Yes", "9999999", testsub$plan)
 pred <- data.frame(customer_ID = testsub$customer_ID, plan = testsub$planpred)
 write.csv(pred, file="submit6.csv", row.names=FALSE, quote=FALSE)
     # 52 changes, 16 affect leaderboard
-    # 0.53769 means 4 errors
+    # 0.53769 means 4 below baseline
 
 # PART 6:
 
@@ -432,7 +432,7 @@ testsub$planpred[testsub$customer_ID=="10116125"] <- "0012002"
 pred <- data.frame(customer_ID = testsub$customer_ID, plan = testsub$planpred)
 write.csv(pred, file="submit11.csv", row.names=FALSE, quote=FALSE)
     # 9 changes, 3 affect leaderboard
-    # 0.53793 means 0 errors
+    # 0.53793 means 0 below baseline
 
 # PART 10:
 
