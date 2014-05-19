@@ -484,10 +484,10 @@ fixplans <- function(planpurmax, plancntmin, commonmin) {
     return(testsub)
 }
 
-# submit: 10 plans, 336 fixes, 0.53853, improved by 10
-ts <- fixplans(0.05, 50, 0.05)
+# submit: 5 plans, 322 fixes, 0.53853, above baseline by 10
+ts <- fixplans(0.05, 70, 0.05)
 pred <- data.frame(customer_ID = ts$customer_ID, plan = ts$planpred)
-write.csv(pred, file="submit21.csv", row.names=FALSE, quote=FALSE)
+write.csv(pred, file="submit34.csv", row.names=FALSE, quote=FALSE)
 
 # PART 11:
 
