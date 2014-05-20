@@ -177,4 +177,11 @@ I learned many lessons about the predictive modeling process by participating in
 
 5. **Learn from others around you:** Some of my key insights (and ideas for different approaches) came from paying close attention to the Kaggle forums. Because there are so many different ways to go about solving a given problem, it is crucial to learn from those around you in order to be exposed to different ways of thinking.
 
-I look forward to reading about the approaches used by other competitors, and getting feedback from other competitors on my approaches!
+
+## Postscript
+
+I finalized this paper on May 18, the day before this competition ended. When it closed on May 19, my standing on the [public leaderboard](http://www.kaggle.com/c/allstate-purchase-prediction-challenge/leaderboard/public) was 263rd, with a score of 0.53853 (10 "picks" above the last quoted plan benchmark of 0.53793). When the [private leaderboard](http://www.kaggle.com/c/allstate-purchase-prediction-challenge/leaderboard/private) was unveiled, I unfortunately dropped to 1039th, with a score of 0.53266 (1 "pick" below the benchmark of 0.53269).
+
+In retrospect, I should have cross-validated my submissions before deciding which two submissions to select as the ones that "counted", especially because I did have one submission that beat the private leaderboard benchmark. I naively assumed that even if I was overfitting the public leaderboard slightly, I was far enough above the benchmark that I wouldn't drop below it on the private leaderboard.
+
+I will be closely watching the ["solution sharing" thread](http://www.kaggle.com/c/allstate-purchase-prediction-challenge/forums/t/8218/solution-sharing) on the Kaggle forums, to learn about the approaches used by other competitors!
