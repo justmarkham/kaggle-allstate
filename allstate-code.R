@@ -484,10 +484,21 @@ fixplans <- function(planpurmax, plancntmin, commonmin) {
     return(testsub)
 }
 
-# submit: 5 plans, 322 fixes, 0.53853, above baseline by 10
+# submission that had my best PUBLIC leaderboard score
+# 5 plans, 322 fixes
+# public score: 0.53853, above baseline by 10 picks
+# private score: 0.53266, below baseline by 1 pick
 ts <- fixplans(0.05, 70, 0.05)
 pred <- data.frame(customer_ID = ts$customer_ID, plan = ts$planpred)
 write.csv(pred, file="submit34.csv", row.names=FALSE, quote=FALSE)
+
+# submission that had my best PRIVATE leaderboard score
+# 2 plans, 305 fixes
+# public score: 0.53847, above baseline by 9 picks
+# private score: 0.53277, above baseline by 3 picks
+ts <- fixplans(0.05, 500, 0.05)
+pred <- data.frame(customer_ID = ts$customer_ID, plan = ts$planpred)
+write.csv(pred, file="submit25.csv", row.names=FALSE, quote=FALSE)
 
 # PART 11:
 
