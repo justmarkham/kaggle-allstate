@@ -4,6 +4,7 @@ For my [General Assembly Data Science](https://generalassemb.ly/education/data-s
 
 * [Project paper](allstate-paper.md) (Markdown document)
 * [R code](allstate-code.R)
+* [Blog post](http://www.dataschool.io/kaggle-allstate-purchase-prediction-challenge/)
 * Presentation
 	* [Recording on YouTube](https://www.youtube.com/watch?v=HGr1yQV3Um0)
 	* [Slides on Speaker Deck](https://speakerdeck.com/justmarkham/allstate-purchase-prediction-challenge-on-kaggle)
